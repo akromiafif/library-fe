@@ -1,6 +1,6 @@
 // queryClient.ts - TanStack Query configuration
-import { QueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
+import { QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   defaultOptions: {

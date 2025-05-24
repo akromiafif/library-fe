@@ -1,11 +1,12 @@
 import 'src/global.css';
 
 import { useEffect } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 import { usePathname } from 'src/routes/hooks';
 
 import { ThemeProvider } from 'src/theme/theme-provider';
-import { QueryClientProvider } from '@tanstack/react-query';
+
 import { queryClient } from './api/queryClient';
 
 // ----------------------------------------------------------------------
