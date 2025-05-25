@@ -37,9 +37,4 @@ export const navData = [
     path: '/blog',
     icon: icon('ic-blog'),
   },
-  {
-    title: 'Not found',
-    path: '/404',
-    icon: icon('ic-disabled'),
-  },
 ];
