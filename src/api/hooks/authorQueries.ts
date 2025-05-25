@@ -1,4 +1,4 @@
-// authQueries.ts
+// authorQueries.ts
 import type { AxiosResponse, AxiosError } from 'axios';
 
 import {

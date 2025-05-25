@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import Popover from '@mui/material/Popover';
@@ -13,31 +12,30 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
-
 export type UserProps = {
   id: string;
   name: string;
-  role: string;
+  nationality: string;
   status: string;
-  company: string;
+  biography: string;
   avatarUrl: string;
   isVerified: boolean;
+  books: number;
 };
 
 type UserTableRowProps = {
   row: UserProps;
   selected: boolean;
   onSelectRow: () => void;
+  onDelete: () => void;
+  onEdit: () => void;
 };
 
-export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) {
+export function UserTableRow({ row, selected, onSelectRow, onDelete, onEdit }: UserTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
-
-  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setOpenPopover(event.currentTarget);
+  const handleOpenPopover = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    setOpenPopover(e.currentTarget);
   }, []);
-
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
@@ -48,24 +46,15 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
         <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
-
         <TableCell component="th" scope="row">
-          <Box
-            sx={{
-              gap: 2,
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar alt={row.name} src={row.avatarUrl} />
             {row.name}
           </Box>
         </TableCell>
-
-        <TableCell>{row.company}</TableCell>
-
-        <TableCell>{row.role}</TableCell>
-
+        <TableCell>{row.nationality}</TableCell>
+        <TableCell>{row.biography}</TableCell>
+        <TableCell>{row.books}</TableCell>
         <TableCell align="center">
           {row.isVerified ? (
             <Iconify width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
@@ -73,11 +62,9 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
             '-'
           )}
         </TableCell>
-
         <TableCell>
-          <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
+          <Label color={row.status === 'banned' ? 'error' : 'success'}>{row.status}</Label>
         </TableCell>
-
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
             <Iconify icon="eva:more-vertical-fill" />
@@ -86,7 +73,7 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
       </TableRow>
 
       <Popover
-        open={!!openPopover}
+        open={Boolean(openPopover)}
         anchorEl={openPopover}
         onClose={handleClosePopover}
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
@@ -108,14 +95,22 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:pen-bold" />
-            Edit
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              onEdit();
+            }}
+          >
+            <Iconify icon="solar:pen-bold" /> Edit
           </MenuItem>
-
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Delete
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              onDelete();
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <Iconify icon="solar:trash-bin-trash-bold" /> Delete
           </MenuItem>
         </MenuList>
       </Popover>
