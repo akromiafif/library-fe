@@ -83,11 +83,13 @@ type UseAuthorsOptions = Omit<
   UseQueryOptions<AuthorsListResponse, ApiError>,
   'queryKey' | 'queryFn'
 >;
+
 type UseAuthorOptions = Omit<UseQueryOptions<AuthorResponse, ApiError>, 'queryKey' | 'queryFn'>;
 type UseCreateAuthorOptions = Omit<
   UseMutationOptions<AuthorResponse, ApiError, AuthorCreateRequest>,
   'mutationFn'
 >;
+
 type UseUpdateAuthorOptions = Omit<
   UseMutationOptions<AuthorResponse, ApiError, { id: number; authorData: AuthorCreateRequest }>,
   'mutationFn'

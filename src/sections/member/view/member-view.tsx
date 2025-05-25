@@ -19,55 +19,61 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useTable } from 'src/hooks/useTable';
 import { TableNoData } from '../table-no-data';
-import { UserTableRow } from '../user-table-row';
-import { UserTableHead } from '../user-table-head';
-import { UserTableToolbar } from '../user-table-toolbar';
-import { emptyRows, applyFilter, getComparator } from '../utils';
-import {
-  useAuthors,
-  useDeleteAuthor,
-  useUpdateAuthor,
-  useCreateAuthor,
-} from 'src/api/hooks/authorQueries';
-import type { AuthorDTO, AuthorCreateRequest } from 'src/api/types/author.types';
 import { TableEmptyRows } from '../table-empty-rows';
+import { UserTableHead } from '../user-table-head';
+import { UserTableRow } from '../user-table-row';
 
-export function UserView() {
+import {
+  useMembers,
+  useDeleteMember,
+  useUpdateMember,
+  useCreateMember,
+} from 'src/api/hooks/memberQueries';
+import type { MemberDTO, MemberCreateRequest } from 'src/api/types/member.types';
+import { UserTableToolbar } from '../user-table-toolbar';
+import { applyFilter, emptyRows, getComparator } from '../utils';
+
+export function MemberView() {
   const table = useTable();
   const [filterName, setFilterName] = useState('');
 
-  const { data, isLoading, error } = useAuthors();
-  const deleteMutation = useDeleteAuthor({ onError: (err) => console.error('Delete failed', err) });
-  const updateMutation = useUpdateAuthor({ onError: (err) => console.error('Update failed', err) });
-  const createMutation = useCreateAuthor({ onError: (err) => console.error('Create failed', err) });
+  const { data, isLoading, error } = useMembers();
+  const deleteMutation = useDeleteMember({ onError: (err) => console.error('Delete failed', err) });
+  const updateMutation = useUpdateMember({ onError: (err) => console.error('Update failed', err) });
+  const createMutation = useCreateMember({ onError: (err) => console.error('Create failed', err) });
 
-  const authors = data?.data ?? [];
-  const STATUSES = ['active', 'banned'] as const;
+  const members = data?.data ?? [];
 
   // Edit modal state
-  const [editingAuthor, setEditingAuthor] = useState<AuthorDTO | null>(null);
-  const [formValues, setFormValues] = useState({ name: '', nationality: '', biography: '' });
+  const [editingMember, setEditingMember] = useState<MemberDTO | null>(null);
+  const [formValues, setFormValues] = useState<Partial<MemberCreateRequest>>({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+  });
 
   // Create modal state
   const [creating, setCreating] = useState(false);
-  const [createValues, setCreateValues] = useState<AuthorCreateRequest>({
+  const [createValues, setCreateValues] = useState<MemberCreateRequest>({
     name: '',
-    nationality: '',
-    biography: '',
+    email: '',
+    phone: '',
+    address: '',
   });
 
-  const rows = authors.map((author, index) => ({
-    id: author.id.toString(),
-    name: author.name,
-    nationality: author.nationality,
-    biography: author.biography || '—',
-    // isVerified: Math.random() < 0.5,
-    // status: STATUSES[Math.floor(Math.random() * STATUSES.length)],
-    isVerified: true,
-    status: 'active',
-    avatarUrl: `/assets/images/avatar/avatar-${index + 1}.webp`,
-    books: author.books?.length ?? 0,
+  const rows = members.map((member) => ({
+    id: member.id.toString(),
+    name: member.name,
+    email: member.email,
+    phone: member.phone || '–',
+    address: member.address || '–',
+    membershipDate: member.membershipDate?.split('T')[0] || '–',
+    status: member.membershipStatus?.toLowerCase() || 'active',
+    borrowedCount: member.borrowedBooks?.length ?? 0,
   }));
+
+  console.log({ members });
 
   const dataFiltered = applyFilter({
     inputData: rows,
@@ -76,32 +82,30 @@ export function UserView() {
   });
   const notFound = !dataFiltered.length && !!filterName;
 
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(Number(id));
-  };
+  const handleDelete = (id: string) => deleteMutation.mutate(Number(id));
 
   const handleOpenEdit = (id: string) => {
-    const author = authors.find((a) => a.id.toString() === id);
-    if (author) {
-      setEditingAuthor(author);
+    const member = members.find((m) => m.id.toString() === id);
+    if (member) {
+      setEditingMember(member);
       setFormValues({
-        name: author.name,
-        nationality: author.nationality,
-        biography: author.biography || '',
+        name: member.name,
+        email: member.email,
+        phone: member.phone || '',
+        address: member.address || '',
       });
     }
   };
-
-  const handleCloseEdit = () => setEditingAuthor(null);
+  const handleCloseEdit = () => setEditingMember(null);
 
   const handleFormChange =
-    (field: keyof typeof formValues) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    (field: keyof MemberCreateRequest) => (e: React.ChangeEvent<HTMLInputElement>) =>
       setFormValues((prev) => ({ ...prev, [field]: e.target.value }));
 
   const handleSaveEdit = () => {
-    if (editingAuthor) {
+    if (editingMember) {
       updateMutation.mutate(
-        { id: editingAuthor.id, authorData: formValues },
+        { id: editingMember.id, memberData: formValues as MemberCreateRequest },
         { onSuccess: () => handleCloseEdit() }
       );
     }
@@ -109,24 +113,25 @@ export function UserView() {
 
   const handleOpenCreate = () => {
     setCreating(true);
-    setCreateValues({ name: '', nationality: '', biography: '' });
+    setCreateValues({ name: '', email: '', phone: '', address: '' });
   };
-
   const handleCloseCreate = () => setCreating(false);
-
   const handleCreateChange =
-    (field: keyof AuthorCreateRequest) => (e: React.ChangeEvent<HTMLInputElement>) =>
-      setCreateValues((prev) => ({ ...prev, [field]: e.target.value }));
-
-  const handleSaveCreate = () => {
-    createMutation.mutate({ ...createValues, books: [] }, { onSuccess: () => handleCloseCreate() });
-  };
+    (field: keyof MemberCreateRequest) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setCreateValues((prev) => ({
+        ...prev,
+        status: 'ACTIVE',
+        membershipDate: new Date().toISOString(),
+        [field]: e.target.value,
+      }));
+  const handleSaveCreate = () =>
+    createMutation.mutate(createValues, { onSuccess: () => handleCloseCreate() });
 
   return (
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          Authors
+          Members
         </Typography>
         <Button
           variant="contained"
@@ -134,7 +139,7 @@ export function UserView() {
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={handleOpenCreate}
         >
-          New author
+          New Member
         </Button>
       </Box>
 
@@ -151,24 +156,25 @@ export function UserView() {
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
             {isLoading ? (
-              <Typography sx={{ p: 2 }}>Loading authors…</Typography>
+              <Typography sx={{ p: 2 }}>Loading members…</Typography>
             ) : error ? (
               <Typography color="error" sx={{ p: 2 }}>
-                Failed to load authors
+                Failed to load members
               </Typography>
             ) : (
-              <Table sx={{ minWidth: 800 }}>
+              <Table sx={{ minWidth: 900 }}>
                 <UserTableHead
                   order={table.order}
                   orderBy={table.orderBy}
                   onSort={table.onSort}
                   headLabel={[
                     { id: 'name', label: 'Name' },
-                    { id: 'nationality', label: 'Nationality' },
-                    { id: 'biography', label: 'Biography' },
-                    { id: 'books', label: 'Total Books' },
-                    { id: 'isVerified', label: 'Verified', align: 'center' },
+                    { id: 'email', label: 'Email' },
+                    { id: 'phone', label: 'Phone' },
+                    { id: 'address', label: 'Address' },
+                    { id: 'membershipDate', label: 'Member Since' },
                     { id: 'status', label: 'Status' },
+                    { id: 'borrowedCount', label: 'Borrowed' },
                     { id: '' },
                   ]}
                 />
@@ -184,7 +190,6 @@ export function UserView() {
                         key={row.id}
                         row={row}
                         selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
                         onDelete={() => handleDelete(row.id)}
                         onEdit={() => handleOpenEdit(row.id)}
                       />
@@ -214,9 +219,9 @@ export function UserView() {
         )}
       </Card>
 
-      {/* Create Author Dialog */}
+      {/* Create Member Dialog */}
       <Dialog open={creating} onClose={handleCloseCreate} fullWidth maxWidth="sm">
-        <DialogTitle>Create Author</DialogTitle>
+        <DialogTitle>Create Member</DialogTitle>
         <DialogContent dividers>
           <TextField
             margin="normal"
@@ -227,19 +232,24 @@ export function UserView() {
           />
           <TextField
             margin="normal"
-            label="Nationality"
+            label="Email"
             fullWidth
-            value={createValues.nationality}
-            onChange={handleCreateChange('nationality')}
+            value={createValues.email}
+            onChange={handleCreateChange('email')}
           />
           <TextField
             margin="normal"
-            label="Biography"
+            label="Phone"
             fullWidth
-            multiline
-            rows={4}
-            value={createValues.biography}
-            onChange={handleCreateChange('biography')}
+            value={createValues.phone}
+            onChange={handleCreateChange('phone')}
+          />
+          <TextField
+            margin="normal"
+            label="Address"
+            fullWidth
+            value={createValues.address}
+            onChange={handleCreateChange('address')}
           />
         </DialogContent>
         <DialogActions>
@@ -250,9 +260,9 @@ export function UserView() {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Author Dialog */}
-      <Dialog open={Boolean(editingAuthor)} onClose={handleCloseEdit} fullWidth maxWidth="sm">
-        <DialogTitle>Edit Author</DialogTitle>
+      {/* Edit Member Dialog */}
+      <Dialog open={Boolean(editingMember)} onClose={handleCloseEdit} fullWidth maxWidth="sm">
+        <DialogTitle>Edit Member</DialogTitle>
         <DialogContent dividers>
           <TextField
             margin="normal"
@@ -263,19 +273,24 @@ export function UserView() {
           />
           <TextField
             margin="normal"
-            label="Nationality"
+            label="Email"
             fullWidth
-            value={formValues.nationality}
-            onChange={handleFormChange('nationality')}
+            value={formValues.email}
+            onChange={handleFormChange('email')}
           />
           <TextField
             margin="normal"
-            label="Biography"
+            label="Phone"
             fullWidth
-            multiline
-            rows={4}
-            value={formValues.biography}
-            onChange={handleFormChange('biography')}
+            value={formValues.phone}
+            onChange={handleFormChange('phone')}
+          />
+          <TextField
+            margin="normal"
+            label="Address"
+            fullWidth
+            value={formValues.address}
+            onChange={handleFormChange('address')}
           />
         </DialogContent>
         <DialogActions>

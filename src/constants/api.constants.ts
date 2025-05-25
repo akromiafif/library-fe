@@ -1,12 +1,14 @@
 // constants/api.constants.ts - API constants
 export const API_ENDPOINTS = {
   AUTHORS: '/authors',
+  MEMBERS: '/members',
   BOOKS: '/books',
   CATEGORIES: '/categories',
 } as const;
 
 export const QUERY_KEYS = {
   AUTHORS: 'authors',
+  MEMBERS: 'members',
   BOOKS: 'books',
   CATEGORIES: 'categories',
 } as const;

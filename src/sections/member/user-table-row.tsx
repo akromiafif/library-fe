@@ -10,27 +10,27 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
+import { Typography } from '@mui/material';
 
-export type UserProps = {
+export type MemberProps = {
   id: string;
   name: string;
-  nationality: string;
+  email: string;
+  phone: string;
+  address: string;
+  membershipDate: string;
   status: string;
-  biography: string;
-  avatarUrl: string;
-  isVerified: boolean;
-  books: number;
+  borrowedCount: number;
 };
 
-type UserTableRowProps = {
-  row: UserProps;
+type MemberTableRowProps = {
+  row: MemberProps;
   selected: boolean;
-  onSelectRow: () => void;
   onDelete: () => void;
   onEdit: () => void;
 };
 
-export function UserTableRow({ row, selected, onSelectRow, onDelete, onEdit }: UserTableRowProps) {
+export function UserTableRow({ row, selected, onDelete, onEdit }: MemberTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
   const handleOpenPopover = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(e.currentTarget);
@@ -39,28 +39,36 @@ export function UserTableRow({ row, selected, onSelectRow, onDelete, onEdit }: U
     setOpenPopover(null);
   }, []);
 
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'suspended':
+        return 'warning';
+      default:
+        return 'error';
+    }
+  };
+
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
         <TableCell component="th" scope="row">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar alt={row.name} src={row.avatarUrl} />
-            {row.name}
+            <Avatar>{row.name.charAt(0)}</Avatar>
+            <Box>
+              <Typography variant="body2">{row.name}</Typography>
+            </Box>
           </Box>
         </TableCell>
-        <TableCell>{row.nationality}</TableCell>
-        <TableCell>{row.biography}</TableCell>
-        <TableCell>{row.books}</TableCell>
-        <TableCell align="center">
-          {row.isVerified ? (
-            <Iconify width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
-          ) : (
-            '-'
-          )}
-        </TableCell>
+        <TableCell>{row.email}</TableCell>
+        <TableCell>{row.phone}</TableCell>
+        <TableCell>{row.address}</TableCell>
+        <TableCell>{row.membershipDate}</TableCell>
         <TableCell>
-          <Label color={row.status === 'banned' ? 'error' : 'success'}>{row.status}</Label>
+          <Label color={getStatusClass(row.status)}>{row.status}</Label>
         </TableCell>
+        <TableCell>{row.borrowedCount} books</TableCell>
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
             <Iconify icon="eva:more-vertical-fill" />
