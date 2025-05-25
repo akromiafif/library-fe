@@ -21,6 +21,7 @@ import { BookFormData, BookModal } from './book-modal';
 import { useAuthors } from 'src/api/hooks/authorQueries';
 import { BorrowedBookFormData, BorrowModal } from './book-borrow-modal';
 import { useMembers } from 'src/api/hooks/memberQueries';
+import { useCreateBorrowedBooks } from 'src/api/hooks/borrowedBookQueries';
 
 // ----------------------------------------------------------------------
 
@@ -109,6 +110,8 @@ export function BooksView() {
   const updateMutation = useUpdateBook();
   const createMutation = useCreateBook();
 
+  const { mutateAsync: createBorrowedBooks } = useCreateBorrowedBooks();
+
   const { data: authorsResponse, isLoading: authorsLoading } = useAuthors();
 
   const { data: membersResponse, isLoading: membersLoading } = useMembers();
@@ -186,37 +189,15 @@ export function BooksView() {
 
   const handleBorrowSave = useCallback(
     async (formData: BorrowedBookFormData) => {
-      setIsSubmitting(true);
-
       try {
-        // Replace this with your actual API call
-        console.log('Submitting borrow request:', formData);
+        await createBorrowedBooks(formData);
 
-        // Mock API call
-        const response = await fetch('/api/borrowed-books', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to borrow book: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        console.log('Borrow request successful:', result);
-
-        // Close modal after a brief delay to show success
-        setTimeout(() => {
-          handleBorrowModalClose();
-        }, 1500);
-
-        // You might want to refresh the books list here to update available copies
-        // onRefreshBooks?.();
-      } catch (error) {
-        console.error('Failed to submit borrow request:', error);
+        setSnackbarMessage('Borrowed book created successfully!');
+        setSnackbarOpen(true);
+        handleCloseModal();
+      } catch (_) {
+        setSnackbarMessage('Failed to created book. Please try again.');
+        setSnackbarOpen(true);
       } finally {
         setIsSubmitting(false);
       }

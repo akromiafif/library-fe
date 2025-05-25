@@ -9,13 +9,13 @@ export interface BorrowedBookDTO {
   borrowDate: string; // ISO date string (YYYY-MM-DD)
   dueDate: string; // ISO date string
   returnDate?: string; // ISO date string
-  status: 'BORROWED' | 'RETURNED' | 'OVERDUE';
+  status: 'BORROWED' | 'RETURNED' | 'OVERDUE' | 'LOST';
   fineAmount: number;
   notes?: string;
   createdAt?: string; // ISO datetime string
   updatedAt?: string; // ISO datetime string
   book: BookSummaryDTO;
-  member: MemberDTO;
+  memberId: number | '';
 }
 
 /**
@@ -23,7 +23,7 @@ export interface BorrowedBookDTO {
  */
 export interface BorrowedBookCreateRequest {
   bookId: number;
-  memberId: number;
+  memberId: number | '';
   borrowDate?: string; // ISO date string; defaults to today
   dueDate?: string; // ISO date string; defaults to borrowDate + 14 days
   notes?: string;

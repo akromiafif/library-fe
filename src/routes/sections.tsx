@@ -48,7 +48,7 @@ export const routesSection: RouteObject[] = [
       </DashboardLayout>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
+      { index: true, element: <BooksPage /> },
       { path: 'author', element: <UserPage /> },
       { path: 'member', element: <MemberPage /> },
       { path: 'books', element: <BooksPage /> },

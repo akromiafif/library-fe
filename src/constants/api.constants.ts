@@ -3,6 +3,7 @@ export const API_ENDPOINTS = {
   AUTHORS: '/authors',
   MEMBERS: '/members',
   BOOKS: '/books',
+  BORROWED_BOOKS: '/borrowed-books',
   CATEGORIES: '/categories',
 } as const;
 
@@ -10,6 +11,7 @@ export const QUERY_KEYS = {
   AUTHORS: 'authors',
   MEMBERS: 'members',
   BOOKS: 'books',
+  BORROWED_BOOKS: 'borrowed-books',
   CATEGORIES: 'categories',
 } as const;
 
