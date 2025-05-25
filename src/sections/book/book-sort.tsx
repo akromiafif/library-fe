@@ -12,13 +12,13 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-type ProductSortProps = ButtonProps & {
+type BookSortProps = ButtonProps & {
   sortBy: string;
   onSort: (newSort: string) => void;
   options: { value: string; label: string }[];
 };
 
-export function ProductSort({ options, sortBy, onSort, sx, ...other }: ProductSortProps) {
+export function BookSort({ options, sortBy, onSort, sx, ...other }: BookSortProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
