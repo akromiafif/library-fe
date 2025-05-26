@@ -8,10 +8,16 @@ import Alert from '@mui/material/Alert';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { BorrowedBookItem } from '../borrowed-book-item';
-import { useGetAllBorrowedBooks } from 'src/api/hooks/borrowedBookQueries';
-import { BorrowedBookDTO } from 'src/api/types/borrowed-book.type';
+import {
+  useGetAllBorrowedBooks,
+  useDeleteBorrowedBook,
+  useUpdateBorrowedBook,
+} from 'src/api/hooks/borrowedBookQueries';
+import { BorrowedBookDTO, BorrowedBookUpdateRequest } from 'src/api/types/borrowed-book.type';
 import { BorrowedBooksSearch } from '../borrowed-book-search';
 import { BorrowedBooksSort } from '../borrowed-book-sort';
+import { DeleteBorrowedBookDialog } from './delete-borrowed-book-dialog';
+import { BorrowedBookEditDialog } from './update-borrowed-book-dialog';
 
 // Sort options for borrowed books
 const SORT_OPTIONS = [
@@ -29,14 +35,39 @@ export function BorrowedBooksView() {
   const [page, setPage] = useState(1); // 1-based for MUI Pagination
   const [sortBy, setSortBy] = useState<string>('latest');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedBorrowedBook, setSelectedBorrowedBook] = useState<BorrowedBookDTO | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedToEdit, setSelectedToEdit] = useState<BorrowedBookDTO | null>(null);
 
-  // Fetch all borrowed books (assuming API returns all books)
+  const updateMutation = useUpdateBorrowedBook();
+
+  const handleUpdateClick = useCallback((book: BorrowedBookDTO) => {
+    setSelectedToEdit(book);
+    setEditDialogOpen(true);
+  }, []);
+
+  const handleUpdateConfirm = useCallback(
+    (updated: BorrowedBookUpdateRequest) => {
+      if (!selectedToEdit) return;
+      updateMutation.mutate(
+        { id: selectedToEdit.id ?? 0, data: updated },
+        { onSuccess: () => setEditDialogOpen(false) }
+      );
+    },
+    [selectedToEdit, updateMutation]
+  );
+
+  // Fetch all borrowed books
   const {
     data: borrowedBooksResponse,
     isLoading,
     isError,
     error,
-  } = useGetAllBorrowedBooks(0, 1000); // Fetch a large number to get all books
+  } = useGetAllBorrowedBooks(0, 1000);
+
+  // Delete mutation
+  const deleteMutation = useDeleteBorrowedBook();
 
   const borrowedBooks: BorrowedBookDTO[] = borrowedBooksResponse?.data || [];
 
@@ -94,6 +125,27 @@ export function BorrowedBooksView() {
     setPage(newPage);
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleDeleteClick = useCallback((borrowedBook: BorrowedBookDTO) => {
+    setSelectedBorrowedBook(borrowedBook);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (selectedBorrowedBook) {
+      deleteMutation.mutate(selectedBorrowedBook.id || 0, {
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          setSelectedBorrowedBook(null);
+        },
+      });
+    }
+  }, [selectedBorrowedBook, deleteMutation]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteDialogOpen(false);
+    setSelectedBorrowedBook(null);
   }, []);
 
   // Handle loading state
@@ -179,6 +231,8 @@ export function BorrowedBooksView() {
                 borrowedBook={borrowedBook}
                 latestPost={latestPost}
                 latestPostLarge={latestPostLarge}
+                onDelete={handleDeleteClick}
+                onUpdate={handleUpdateClick} // ⇦ pass it here
               />
             </Grid>
           );
@@ -239,6 +293,25 @@ export function BorrowedBooksView() {
             Page {page} of {totalPages}
           </Typography>
         </Box>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteBorrowedBookDialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        borrowedBook={selectedBorrowedBook}
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleteMutation.isPending}
+      />
+
+      {selectedToEdit && (
+        <BorrowedBookEditDialog
+          open={editDialogOpen}
+          borrowedBook={selectedToEdit}
+          isLoading={false}
+          onClose={() => setEditDialogOpen(false)}
+          onConfirm={handleUpdateConfirm}
+        />
       )}
     </DashboardContent>
   );

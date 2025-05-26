@@ -9,6 +9,12 @@ import Card from '@mui/material/Card';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { useState } from 'react';
 
 import { fDate } from 'src/utils/format-time';
 
@@ -23,12 +29,38 @@ export function BorrowedBookItem({
   borrowedBook,
   latestPost,
   latestPostLarge,
+  onDelete,
+  onUpdate,
   ...other
 }: CardProps & {
   borrowedBook: BorrowedBookDTO;
   latestPost: boolean;
   latestPostLarge: boolean;
+  onDelete?: (borrowedBook: BorrowedBookDTO) => void;
+  onUpdate?: (borrowedBook: BorrowedBookDTO) => void;
 }) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDelete = () => {
+    handleMenuClose();
+    onDelete?.(borrowedBook);
+  };
+
+  const handleUpdate = () => {
+    handleMenuClose();
+    onUpdate?.(borrowedBook);
+  };
+
   // Calculate days until due
   const daysUntilDue = borrowedBook.dueDate
     ? Math.ceil(
@@ -58,6 +90,68 @@ export function BorrowedBookItem({
   // Generate member avatar URL based on member ID
   const memberAvatarUrl = `https://i.pravatar.cc/150?u=${borrowedBook.memberId}`;
 
+  const renderMoreButton = (
+    <>
+      <IconButton
+        size="small"
+        onClick={handleMenuOpen}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 10,
+          bgcolor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(6px)',
+          '&:hover': {
+            bgcolor: 'rgba(255, 255, 255, 0.9)',
+          },
+          ...((latestPostLarge || latestPost) && {
+            bgcolor: 'rgba(0, 0, 0, 0.4)',
+            color: 'common.white',
+            '&:hover': {
+              bgcolor: 'rgba(0, 0, 0, 0.6)',
+            },
+          }),
+        }}
+      >
+        <Iconify icon="eva:more-vertical-fill" width={16} />
+      </IconButton>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        PaperProps={{
+          sx: {
+            minWidth: 160,
+            boxShadow: (theme) => theme.customShadows.dropdown,
+          },
+        }}
+      >
+        <MenuItem onClick={handleUpdate}>
+          <ListItemIcon>
+            <Iconify icon="solar:pen-bold" />
+          </ListItemIcon>
+          <ListItemText primary="Edit" />
+        </MenuItem>
+        <MenuItem onClick={handleDelete}>
+          <ListItemIcon>
+            <Iconify icon="solar:trash-bin-trash-bold" color="error.main" />
+          </ListItemIcon>
+          <ListItemText primary="Delete" primaryTypographyProps={{ color: 'error.main' }} />
+        </MenuItem>
+      </Menu>
+    </>
+  );
+
   const renderAvatar = (
     <Avatar
       src={memberAvatarUrl}
@@ -73,12 +167,7 @@ export function BorrowedBookItem({
         }),
       }}
     >
-      {!memberAvatarUrl && (
-        <Iconify
-          // icon={getStatusIcon(borrowedBook.status)}
-          icon="eva:trending-up-fill"
-        />
-      )}
+      {!memberAvatarUrl && <Iconify icon="eva:trending-up-fill" />}
     </Avatar>
   );
 
@@ -281,6 +370,7 @@ export function BorrowedBookItem({
         {renderShape}
         {renderAvatar}
         {renderCover}
+        {renderMoreButton}
       </Box>
 
       <Box

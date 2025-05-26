@@ -37,9 +37,6 @@ export const memberApi = {
   getMemberById: (id: number): Promise<MemberResponse> =>
     apiClient.get<MemberResponse>(`${API_BASE_URL}/${id}`).then((res) => res.data),
 
-  getMemberByIdWithBorrowedBooks: (id: number): Promise<MemberResponse> =>
-    apiClient.get<MemberResponse>(`${API_BASE_URL}/${id}/borrowed-books`).then((res) => res.data),
-
   updateMember: ({
     id,
     memberData,
@@ -51,18 +48,6 @@ export const memberApi = {
 
   deleteMember: (id: number): Promise<DeleteResponse> =>
     apiClient.delete<DeleteResponse>(`${API_BASE_URL}/${id}`).then((res) => res.data),
-
-  searchMembers: (searchTerm: string): Promise<MembersListResponse> =>
-    apiClient
-      .get<MembersListResponse>(`${API_BASE_URL}/search`, {
-        params: { searchTerm },
-      })
-      .then((res) => res.data),
-
-  getMemberByEmail: (email: string): Promise<MemberResponse> =>
-    apiClient
-      .get<MemberResponse>(`${API_BASE_URL}/email/${encodeURIComponent(email)}`)
-      .then((res) => res.data),
 };
 
 // Query Keys
@@ -73,8 +58,6 @@ export const memberKeys = {
   details: () => [...memberKeys.all, 'detail'] as const,
   detail: (id: number) => [...memberKeys.details(), id] as const,
   detailWithBooks: (id: number) => [...memberKeys.details(), id, 'borrowed-books'] as const,
-  search: (term: string) => [...memberKeys.all, 'search', term] as const,
-  byEmail: (email: string) => [...memberKeys.all, 'email', email] as const,
 };
 
 // Custom Hook Options Types
@@ -99,39 +82,6 @@ export const useMember = (id?: number, options: UseMemberOptions = {}) =>
     queryKey: memberKeys.detail(id!),
     queryFn: () => memberApi.getMemberById(id!),
     enabled: !!id,
-    staleTime: 300_000,
-    ...options,
-  });
-
-export const useMemberWithBorrowedBooks = (id?: number, options: UseMemberOptions = {}) =>
-  useQuery({
-    queryKey: memberKeys.detailWithBooks(id!),
-    queryFn: () => memberApi.getMemberByIdWithBorrowedBooks(id!),
-    enabled: !!id,
-    staleTime: 300_000,
-    ...options,
-  });
-
-export const useSearchMembers = (
-  term?: string,
-  options: Omit<UseQueryOptions<MembersListResponse, ApiError>, 'queryKey' | 'queryFn'> = {}
-) =>
-  useQuery({
-    queryKey: memberKeys.search(term!),
-    queryFn: () => memberApi.searchMembers(term!),
-    enabled: !!term && term.length > 0,
-    staleTime: 120_000,
-    ...options,
-  });
-
-export const useMemberByEmail = (
-  email?: string,
-  options: Omit<UseQueryOptions<MemberResponse, ApiError>, 'queryKey' | 'queryFn'> = {}
-) =>
-  useQuery({
-    queryKey: memberKeys.byEmail(email!),
-    queryFn: () => memberApi.getMemberByEmail(email!),
-    enabled: !!email && email.length > 0,
     staleTime: 300_000,
     ...options,
   });
@@ -188,14 +138,4 @@ export const useDeleteMember = (
     onError: (error) => console.error('Failed to delete member:', error),
     ...options,
   });
-};
-
-export const usePrefetchMember = () => {
-  const queryClient = useQueryClient();
-  return (id: number) =>
-    queryClient.prefetchQuery({
-      queryKey: memberKeys.detail(id),
-      queryFn: () => memberApi.getMemberById(id),
-      staleTime: 300_000,
-    });
 };

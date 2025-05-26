@@ -10,21 +10,12 @@ import {
 import { API_ENDPOINTS, QUERY_KEYS } from 'src/constants/api.constants';
 import apiClient from '../axiosConfig';
 import type { ApiResponseDTO } from '../types/api-response.types';
-import type {
-  BookDTO,
-  BookCreateRequest,
-  BookSummaryDTO,
-  SearchRequestDTO,
-  BookQueryFilters,
-} from '../types/book.types';
+import type { BookDTO, BookCreateRequest, BookQueryFilters } from '../types/book.types';
 
 const BASE = API_ENDPOINTS.BOOKS;
 
 type BookResponse = ApiResponseDTO<BookDTO>;
 type BooksListResponse = ApiResponseDTO<BookDTO[]>;
-type SummaryListResponse = ApiResponseDTO<BookSummaryDTO[]>;
-type CategoriesResponse = ApiResponseDTO<string[]>;
-type SearchBooksResponse = ApiResponseDTO<BookDTO[]>;
 type DeleteResponse = ApiResponseDTO<void>;
 
 interface ApiError extends AxiosError {
@@ -62,23 +53,6 @@ export const bookApi = {
     apiClient.put<BookResponse>(`${BASE}/${id}`, data).then((r) => r.data),
 
   deleteBook: (id: number) => apiClient.delete<DeleteResponse>(`${BASE}/${id}`).then((r) => r.data),
-
-  searchBooks: (body: SearchRequestDTO) =>
-    apiClient.post<SearchBooksResponse>(`${BASE}/search`, body).then((r) => r.data),
-
-  getAvailable: () => apiClient.get<BooksListResponse>(`${BASE}/available`).then((r) => r.data),
-
-  getByCategory: (category: string) =>
-    apiClient
-      .get<BooksListResponse>(`${BASE}/category/${encodeURIComponent(category)}`)
-      .then((r) => r.data),
-
-  getCategories: () => apiClient.get<CategoriesResponse>(`${BASE}/categories`).then((r) => r.data),
-
-  getBookSummaries: (filters?: BookQueryFilters) =>
-    apiClient
-      .get<SummaryListResponse>(`${BASE}/summaries`, { params: filters })
-      .then((r) => r.data),
 };
 
 export const bookKeys = {
@@ -86,11 +60,6 @@ export const bookKeys = {
   lists: () => [...bookKeys.all, 'list'] as const,
   list: (filters?: BookQueryFilters) => [...bookKeys.lists(), { filters }] as const,
   detail: (id: number) => [...bookKeys.all, 'detail', id] as const,
-  search: (body: SearchRequestDTO) => [...bookKeys.all, 'search', body] as const,
-  available: () => [...bookKeys.all, 'available'] as const,
-  byCategory: (cat: string) => [...bookKeys.all, 'category', cat] as const,
-  categories: () => [...bookKeys.all, 'categories'] as const,
-  summaries: (filters?: BookQueryFilters) => [...bookKeys.all, 'summaries', { filters }] as const,
 };
 
 export const useBooks = (options: UseBooksOptions = {}) =>
@@ -143,50 +112,4 @@ export const useDeleteBook = (options: UseDeleteBookOptions = {}) => {
     },
     ...options,
   });
-};
-
-export const useSearchBooks = (
-  body: SearchRequestDTO,
-  options: Omit<UseQueryOptions<SearchBooksResponse, ApiError>, 'queryKey' | 'queryFn'> = {}
-) =>
-  useQuery({
-    queryKey: bookKeys.search(body),
-    queryFn: () => bookApi.searchBooks(body),
-    ...options,
-  });
-
-export const useAvailableBooks = (options: UseBooksOptions) =>
-  useQuery({ queryKey: bookKeys.available(), queryFn: bookApi.getAvailable, ...options });
-
-export const useBooksByCategory = (category: string, options: UseBooksOptions) =>
-  useQuery({
-    queryKey: bookKeys.byCategory(category),
-    queryFn: () => bookApi.getByCategory(category),
-    enabled: !!category,
-    ...options,
-  });
-
-export const useCategories = (
-  options: Omit<UseQueryOptions<CategoriesResponse, ApiError>, 'queryKey' | 'queryFn'>
-) => useQuery({ queryKey: bookKeys.categories(), queryFn: bookApi.getCategories, ...options });
-
-export const useBookSummaries = (
-  options: Omit<UseQueryOptions<SummaryListResponse, ApiError>, 'queryKey' | 'queryFn'>,
-  filters?: BookQueryFilters
-) =>
-  useQuery({
-    queryKey: bookKeys.summaries(filters),
-    queryFn: () => bookApi.getBookSummaries(filters),
-    enabled: !!filters,
-    ...options,
-  });
-
-export const usePrefetchBook = () => {
-  const queryClient = useQueryClient();
-  return (id: number) =>
-    queryClient.prefetchQuery({
-      queryKey: bookKeys.detail(id),
-      queryFn: () => bookApi.getBook(id),
-      staleTime: 300_000,
-    });
 };
