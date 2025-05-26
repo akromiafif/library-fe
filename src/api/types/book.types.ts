@@ -52,24 +52,6 @@ export interface SearchRequestDTO {
   availableOnly?: boolean;
 }
 
-export interface BorrowedBookDTO {
-  id?: number;
-  bookId: number;
-  memberId: number;
-  bookTitle?: string;
-  authorName?: string;
-  memberName?: string;
-  memberEmail?: string;
-  borrowDate: string;
-  dueDate: string;
-  returnDate?: string;
-  status: BorrowStatus;
-  fineAmount: number;
-  notes?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export enum BorrowStatus {
   BORROWED = 'BORROWED',
   RETURNED = 'RETURNED',

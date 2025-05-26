@@ -40,9 +40,6 @@ const authorApi = {
   getAuthorById: (id: number): Promise<AuthorResponse> =>
     apiClient.get<AuthorResponse>(`${API_BASE_URL}/${id}`).then((res) => res.data),
 
-  getAuthorByIdWithBooks: (id: number): Promise<AuthorResponse> =>
-    apiClient.get<AuthorResponse>(`${API_BASE_URL}/${id}/books`).then((res) => res.data),
-
   updateAuthor: ({
     id,
     authorData,
@@ -54,16 +51,6 @@ const authorApi = {
 
   deleteAuthor: (id: number): Promise<DeleteResponse> =>
     apiClient.delete<DeleteResponse>(`${API_BASE_URL}/${id}`).then((res) => res.data),
-
-  searchAuthorsByName: (name: string): Promise<AuthorsListResponse> =>
-    apiClient
-      .get<AuthorsListResponse>(`${API_BASE_URL}/search`, { params: { name } })
-      .then((res) => res.data),
-
-  getAuthorsByNationality: (nationality: string): Promise<AuthorsListResponse> =>
-    apiClient
-      .get<AuthorsListResponse>(`${API_BASE_URL}/nationality/${nationality}`)
-      .then((res) => res.data),
 };
 
 // Query Keys
@@ -74,8 +61,6 @@ export const authorKeys = {
   details: () => [...authorKeys.all, 'detail'] as const,
   detail: (id: number) => [...authorKeys.details(), id] as const,
   detailWithBooks: (id: number) => [...authorKeys.details(), id, 'books'] as const,
-  search: (name: string) => [...authorKeys.all, 'search', name] as const,
-  nationality: (nat: string) => [...authorKeys.all, 'nationality', nat] as const,
 };
 
 // Custom Hook Options Types
@@ -113,39 +98,6 @@ export const useAuthor = (id?: number, options: UseAuthorOptions = {}) =>
     queryKey: authorKeys.detail(id!),
     queryFn: () => authorApi.getAuthorById(id!),
     enabled: !!id,
-    staleTime: 300_000,
-    ...options,
-  });
-
-export const useAuthorWithBooks = (id?: number, options: UseAuthorOptions = {}) =>
-  useQuery({
-    queryKey: authorKeys.detailWithBooks(id!),
-    queryFn: () => authorApi.getAuthorByIdWithBooks(id!),
-    enabled: !!id,
-    staleTime: 300_000,
-    ...options,
-  });
-
-export const useSearchAuthors = (
-  name?: string,
-  options: Omit<UseQueryOptions<AuthorsListResponse, ApiError>, 'queryKey' | 'queryFn'> = {}
-) =>
-  useQuery({
-    queryKey: authorKeys.search(name!),
-    queryFn: () => authorApi.searchAuthorsByName(name!),
-    enabled: !!name && name.length > 0,
-    staleTime: 120_000,
-    ...options,
-  });
-
-export const useAuthorsByNationality = (
-  nationality?: string,
-  options: Omit<UseQueryOptions<AuthorsListResponse, ApiError>, 'queryKey' | 'queryFn'> = {}
-) =>
-  useQuery({
-    queryKey: authorKeys.nationality(nationality!),
-    queryFn: () => authorApi.getAuthorsByNationality(nationality!),
-    enabled: !!nationality,
     staleTime: 300_000,
     ...options,
   });
@@ -190,14 +142,4 @@ export const useDeleteAuthor = (options: UseDeleteAuthorOptions = {}) => {
     onError: (error) => console.error('Failed to delete author:', error),
     ...options,
   });
-};
-
-export const usePrefetchAuthor = () => {
-  const queryClient = useQueryClient();
-  return (id: number) =>
-    queryClient.prefetchQuery({
-      queryKey: authorKeys.detail(id),
-      queryFn: () => authorApi.getAuthorById(id),
-      staleTime: 300_000,
-    });
 };

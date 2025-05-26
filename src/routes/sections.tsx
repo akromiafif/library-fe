@@ -11,10 +11,10 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 
 // ----------------------------------------------------------------------
 
-export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const MemberPage = lazy(() => import('src/pages/member'));
 export const BooksPage = lazy(() => import('src/pages/books'));
+export const BorrwedBooksPage = lazy(() => import('src/pages/borrowed-books'));
 
 const renderFallback = () => (
   <Box
@@ -50,7 +50,7 @@ export const routesSection: RouteObject[] = [
       { path: 'author', element: <UserPage /> },
       { path: 'member', element: <MemberPage /> },
       { path: 'books', element: <BooksPage /> },
-      { path: 'blog', element: <BlogPage /> },
+      { path: 'borrowed-books', element: <BorrwedBooksPage /> },
     ],
   },
 ];

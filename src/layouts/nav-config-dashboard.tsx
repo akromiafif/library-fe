@@ -33,8 +33,8 @@ export const navData = [
     icon: icon('ic-cart'),
   },
   {
-    title: 'Blog',
-    path: '/blog',
-    icon: icon('ic-blog'),
+    title: 'Borrowed Books',
+    path: '/borrowed-books',
+    icon: icon('ic-book'),
   },
 ];

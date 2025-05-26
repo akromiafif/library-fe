@@ -1,0 +1,15 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rounded square, 40% opacity -->
+  <path
+    opacity="0.4"
+    d="M16.9841 2H7C4.25397 2 2 4.25397 2 7.01587V17C2 19.746 4.25397 22 7 22H16.9841C19.746 22 22 19.746 22 16.9841V7.01587C22 4.25397 19.746 2 16.9841 2Z"
+    fill="#637381"
+  />
+  <!-- Book pages: two vertical panels -->
+  <path
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M8 6H11V18H8V6ZM13 6H16V18H13V6Z"
+    fill="#637381"
+  />
+</svg>
