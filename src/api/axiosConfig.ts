@@ -11,7 +11,8 @@ export interface ApiError extends AxiosError {
 
 // Create axios instance with base configuration
 const apiClient: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api', // Adjust to your API base URL
+  // baseURL: 'http://localhost:8080/api', // Adjust to your API base URL
+  baseURL: 'http://http://54.169.220.135:5051/api', // Adjust to your API base URL
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
