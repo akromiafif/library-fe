@@ -28,11 +28,6 @@ export const navData = [
     icon: icon('ic-user'),
   },
   {
-    title: 'Book',
-    path: '/books',
-    icon: icon('ic-cart'),
-  },
-  {
     title: 'Borrowed Books',
     path: '/borrowed-books',
     icon: icon('ic-book'),

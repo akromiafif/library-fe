@@ -75,6 +75,7 @@ interface EditBookFormData {
   totalCopies: number;
   availableCopies: number;
   authorName: string;
+  authorId: number;
 }
 
 export function BooksView() {
@@ -99,6 +100,7 @@ export function BooksView() {
     totalCopies: 1,
     availableCopies: 1,
     authorName: '',
+    authorId: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -149,6 +151,7 @@ export function BooksView() {
       totalCopies: book.totalCopies,
       availableCopies: book.availableCopies,
       authorName: book.authorName || '',
+      authorId: book.authorId,
     });
     setEditModalOpen(true);
   }, []);
@@ -165,6 +168,7 @@ export function BooksView() {
       totalCopies: 1,
       availableCopies: 1,
       authorName: '',
+      authorId: 1,
     });
   }, []);
 
@@ -184,6 +188,7 @@ export function BooksView() {
       totalCopies: 1,
       availableCopies: 1,
       authorName: '',
+      authorId: 1,
     });
   }, []);
 
@@ -205,26 +210,29 @@ export function BooksView() {
     [handleBorrowModalClose]
   );
 
-  const handleSaveBook = useCallback(async () => {
-    if (!selectedBook) return;
+  const handleSaveBook = useCallback(
+    async (data: BookFormData) => {
+      if (!selectedBook) return;
 
-    setIsSubmitting(true);
-    try {
-      await updateMutation.mutate({
-        id: selectedBook.id,
-        data: editFormData,
-      });
+      setIsSubmitting(true);
+      try {
+        await updateMutation.mutate({
+          id: selectedBook.id,
+          data,
+        });
 
-      setSnackbarMessage('Book updated successfully!');
-      setSnackbarOpen(true);
-      handleCloseEditModal();
-    } catch (_) {
-      setSnackbarMessage('Failed to update book. Please try again.');
-      setSnackbarOpen(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [selectedBook, editFormData, handleCloseEditModal]);
+        setSnackbarMessage('Book updated successfully!');
+        setSnackbarOpen(true);
+        handleCloseEditModal();
+      } catch (_) {
+        setSnackbarMessage('Failed to update book. Please try again.');
+        setSnackbarOpen(true);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [selectedBook, editFormData, handleCloseEditModal]
+  );
 
   const handleCreateBook = useCallback(
     async (formData: BookFormData) => {

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - '3039:3039'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - frontend_network
+
+networks:
+  frontend_network:
+    driver: bridge

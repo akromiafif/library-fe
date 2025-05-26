@@ -49,7 +49,6 @@ export const routesSection: RouteObject[] = [
       { index: true, element: <BooksPage /> },
       { path: 'author', element: <UserPage /> },
       { path: 'member', element: <MemberPage /> },
-      { path: 'books', element: <BooksPage /> },
       { path: 'borrowed-books', element: <BorrwedBooksPage /> },
     ],
   },
